@@ -28,8 +28,15 @@ ADDITIONAL FEATURES :
 #define TIMER_ON         0 // 0:Disable timer, 1:Enable timer
 #define D2R 0.017453292
 #define PI 3.141592654
-#define ROWS 3
+#define ROWS 4
 #define COLS 7
+
+struct Brick {
+	int x, y;
+};
+
+Brick bricks[ROWS][COLS];
+
 
 
 
@@ -102,55 +109,49 @@ void vprint2(int x, int y, float size, const char* string, ...) {
 	glPopMatrix();
 }
 
-void drawBrick(int x, int y) {
-	// Draw filled blue brick
-	glColor3f(0, 0, 1); // Blue color
-	glBegin(GL_QUADS);
-	glVertex2f(x, y);         // Bottom-left
-	glVertex2f(x + 100, y);   // Bottom-right
-	glVertex2f(x + 100, y + 50); // Top-right
-	glVertex2f(x, y + 50);    // Top-left
-	glEnd();
+void initBricks() {
+	int startX = -350, startY = 150; 
+	int brickWidth = 100, brickHeight = 50, spacing = 5; // 5px space between each block
 
-	// Draw black outline
-	glColor3f(0, 0, 0); // Black color
-	glLineWidth(3); // Thicker line for visibility
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(x, y);         // Bottom-left
-	glVertex2f(x + 100, y);   // Bottom-right
-	glVertex2f(x + 100, y + 50); // Top-right
-	glVertex2f(x, y + 50);    // Top-left
+	for (int i = 0; i < ROWS; i++) {
+		for (int j = 0; j < COLS; j++) {
+			bricks[i][j].x = startX + j * (brickWidth + spacing);
+			bricks[i][j].y = startY - i * (brickHeight + spacing);
+		}
+	}
+}
+
+
+
+void drawBrick(int x, int y) {
+	glBegin(GL_QUADS);
+	glVertex2f(x, y);
+	glVertex2f(x + 95, y);    
+	glVertex2f(x + 95, y + 45); 
+	glVertex2f(x, y + 45);    
 	glEnd();
 }
+
 
 void drawBricks() {
 	for (int i = 0; i < ROWS; i++) {
 		for (int j = 0; j < COLS; j++) {
-			if (bricks[i][j].isActive) { // Only draw active bricks
-				drawBrick(bricks[i][j].x, bricks[i][j].y);
-			}
+			// Set color based on index
+			if (i == 0)
+				glColor3f(0, 0, 1); // Blue
+			else if (i == 1)
+				glColor3f(0, 1, 0); // Green
+			else if (i == 2)
+				glColor3f(1, 0, 0); // Red
+			else if (i == 3)
+				glColor3f(1, 1, 0); // Yellow
+
+			drawBrick(bricks[i][j].x, bricks[i][j].y);
 		}
 	}
 }
 
 
-struct Brick {
-	int x, y;  // Position
-	bool isActive; // True if the brick is still in the game
-};
-
-void InitBricks() {
-	int startX = -350;
-	int startY = 200;
-
-	for (int i = 0; i < ROWS; i++) {
-		for (int j = 0; j < COLS; j++) {
-			bricks[i][j].x = startX + j * 100;
-			bricks[i][j].y = startY - i * 50;
-			bricks[i][j].isActive = true; // All bricks start as active
-		}
-	}
-}
 
 
 // To display onto window using OpenGL commands
@@ -185,20 +186,17 @@ void display() {
 	glLineWidth(5);
 	glColor3f(1, 0, 0);
 	glBegin(GL_QUADS);
-	glVertex2f(-75, -130); // Bottom-left
-	glVertex2f(75, -130);  // Bottom-right
-	glVertex2f(75, -180);  // Top-right
-	glVertex2f(-75, -180); // Top-left
+	glVertex2f(-75, -160);
+	glVertex2f(75, -160);  
+	glVertex2f(75, -210);  
+	glVertex2f(-75, -210); 
 	glEnd();
 
-	
-	// Draw blue bricks in a row
-	int startX = -350;
-	int startY = 50;
+	//Bricks
+	drawBricks();
 
-	for (int i = 0; i < 7; i++) {
-		drawBrick(startX + (i * 100), startY);
-	}
+
+
 
 	glutSwapBuffers();
 }
@@ -327,6 +325,7 @@ void Init() {
 	// Smoothing shapes
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	initBricks();
 }
 
 int main(int argc, char* argv[]) {
